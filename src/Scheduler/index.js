@@ -65,12 +65,12 @@ class Scheduler {
     const taskInstance = ioc.make(task)
 
     // Every task must expose a schedule
-    if (!('schedule' in task)) {
+    if (!task.schedule) {
       throw CE.RuntimeException.undefinedTaskSchedule(file)
     }
 
     // Every task must expose a handle function
-    if (!('handle' in taskInstance)) {
+    if (!taskInstance.handle) {
       throw CE.RuntimeException.undefinedTaskHandle(file)
     }
 
@@ -111,11 +111,7 @@ class Scheduler {
       throw e
     }
 
-    taskFiles = taskFiles.filter(file => path.extname(file) === '.js')
-
-    for (let taskFile of taskFiles) {
-      await this._fetchTask(taskFile)
-    }
+    await Promise.all(taskFiles.map((taskFile) => this._fetchTask(taskFile)))
 
     debug('scheduler running %d tasks', this.registeredTasks.length)
   }
